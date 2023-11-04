@@ -1,12 +1,10 @@
 import React, { useEffect, useState, useRef } from "react";
 import axios from "axios";
 const getListImgFromAPI = async (page, query) => {
-  console.log("🚀 ~ file: Photos.js:4 ~ getListImgFromAPI ~ query:", query);
   const _query = query || "a";
   const response = await axios.get(
     `https://api.unsplash.com/search/photos?query=${_query}&page=${page}&per_page=8&client_id=YqLEK4C5P--fyKC4bwk3Lazp0H3kU6-ENSmcAZljVfM`
   );
-  console.log("🚀 ~ file: Photos.js:11 ~ getListImgFromAPI ~ response:", response);
   return response.data;
 };
 
@@ -21,8 +19,13 @@ const Photos = () => {
     setLoading(true);
     const res = await getListImgFromAPI(page, query);
     const listImage = res.results;
-
-    setImages([...images, ...listImage]);
+    const uniqueList = [...images, ...listImage].reduce((acc, curr) => {
+      if (!acc[curr.id]) {
+        acc[curr.id] = curr;
+      }
+      return acc;
+    }, {});
+    setImages([...Object.values(uniqueList)]);
     setNextPage((prev) => prev + 1);
     setLoading(false);
   };
@@ -38,6 +41,7 @@ const Photos = () => {
 
   const handleSearch = async () => {
     setLoading(true);
+    setNextPage(1);
     const res = await getListImgFromAPI(page, query);
     const listImage = res.results;
     setImages([...listImage]);
